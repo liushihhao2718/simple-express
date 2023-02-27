@@ -1,10 +1,15 @@
-const express = require('express');
+//@ts-check
+require("dotenv").config();
+require("./src/db");
+const express = require("express");
 
 const app = express();
 const port = 3000;
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
+app.get("/", async (req, res) => {
+  const todos = require("./src/model/TodoModel");
+  const deleted = await todos.destroy(9);
+  res.json({ deleted });
 });
 
 app.listen(port, () => {

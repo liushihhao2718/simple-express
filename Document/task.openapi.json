@@ -1,0 +1,55 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ToDo List",
+    "version": "0.0.1"
+  },
+  "paths": {
+    "/task": {
+      "description": "task CRUD",
+      "get": {
+        "operationId": "getTask",
+        "summary": "",
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Task": {
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "task":{
+            "type": "string"
+          },
+          "status":{
+            "type":"string",
+            "enum": ["inactive", "active"] 
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  # app:
+    # image: node:16-alpine
+  mysql:
+    image: mysql:8.0.32
+    ports:
+      - "3306:3306"
+    env_file: 
+      - .env
+    

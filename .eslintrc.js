@@ -1,9 +1,10 @@
 module.exports = {
   env: {
-    browser: true,
-    es2021: true,
+    node: true,
+    commonjs: true,
+    es2021: true
   },
-  extends: 'airbnb-base',
+  extends: ['eslint:recommended', "plugin:security/recommended"],
   overrides: [
   ],
   parserOptions: {
@@ -13,5 +14,11 @@ module.exports = {
   rules: {
     'no-console': 'off',
     complexity: ['error', 7],
+    "consistent-return": 2,
+    "indent": [1, 2],
+    "no-else-return": 1,
+    "semi": [1, "always"],
+    "space-unary-ops": 2,
+    "max-len": ["error", { "comments": 80 }]
   },
 };
