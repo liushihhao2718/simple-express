@@ -9,12 +9,33 @@ const utilObj = require("../util/object");
  * @property {boolean} completed
  */
 
+
+//json schema for todo
+const todoSchema = {
+  type: "object",
+  properties: {
+    id: { type: "number" },
+    description: { type: "string" },
+    completed: { type: "boolean" },
+  },
+  required: ["description"],
+  additionalProperties: false,
+};
+
+const createTodoSchema = {
+  type: "object",
+  properties: {
+    description: { type: "string" },
+  },
+  required: ["description"],
+  additionalProperties: false,
+};
+
 /**
- * @typedef {Object} CreateTodo
- * @property {string} description - The description of the todo item.
+ * @typedef {Omit<Todo, 'id' | 'completed' >} CreateTodo
  */
 
-module.exports = { findAll, findById, create, update, destroy };
+
 
 /**
  *
@@ -38,7 +59,7 @@ async function findById(id) {
     id,
   ]);
   // @ts-ignore
-  return rows;
+  return rows[0];
 }
 
 /**
@@ -48,7 +69,6 @@ async function findById(id) {
  */
 async function create(description) {
   const poolPromise = pool;
-
   const [result] = /** @type {import('mysql2').OkPacket[]} */ (
     await poolPromise.query("INSERT INTO todos SET ?", [description])
   );
@@ -88,3 +108,5 @@ async function destroy(id) {
 
   return result.affectedRows > 0;
 }
+
+module.exports = { findAll, findById, create, update, destroy, todoSchema };
