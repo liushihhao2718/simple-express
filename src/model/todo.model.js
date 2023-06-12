@@ -1,51 +1,39 @@
 //@ts-check
-const { pool } = require("../db");
+// eslint-disable-next-line no-unused-vars
+const { query, mysql } = require("../db");
 const utilObj = require("../util/object");
 
 /**
- * @typedef {Object} Todo
- * @property {number} id - The unique identifier of the todo item.
- * @property {string} description
- * @property {boolean} completed
+ * @typedef {import('mysql2')} mysql
  */
 
-
-//json schema for todo
-const todoSchema = {
-  type: "object",
-  properties: {
-    id: { type: "number" },
-    description: { type: "string" },
-    completed: { type: "boolean" },
-  },
-  required: ["description"],
-  additionalProperties: false,
-};
-
-const createTodoSchema = {
-  type: "object",
-  properties: {
-    description: { type: "string" },
-  },
-  required: ["description"],
-  additionalProperties: false,
-};
+/**
+ * @typedef {Object} Todo
+ * @property {number} id
+ * @property {string} description
+ * @property {boolean} completed
+ * @property {Date} created_date
+ * @property {Date} delete_date
+ */
 
 /**
  * @typedef {Omit<Todo, 'id' | 'completed' >} CreateTodo
  */
 
-
-
 /**
- *
+ * @param {number} limit
+ * @param {number} offset
  * @returns {Promise<Todo[]>}
  */
-async function findAll() {
-  const poolPromise = pool;
-  const [rows] = await poolPromise.query("SELECT * FROM todos");
-  // @ts-ignore
-  return rows;
+async function findAll(limit = Number.MAX_SAFE_INTEGER, offset = 0) {
+  const [rows] = await query(
+    `
+    SELECT * FROM todos 
+    WHERE delete_date IS NULL
+    LIMIT ? OFFSET ?;`,
+    [limit, offset]
+  );
+  return /** @type {Todo[]}*/ (rows);
 }
 
 /**
@@ -54,12 +42,11 @@ async function findAll() {
  * @returns {Promise<Todo>}
  */
 async function findById(id) {
-  const poolPromise = pool;
-  const [rows] = await poolPromise.query("SELECT * FROM todos WHERE id = ?", [
-    id,
-  ]);
-  // @ts-ignore
-  return rows[0];
+  const [rows] = await query(
+    "SELECT * FROM todos WHERE id = ? AND delete_date IS NULL",
+    [id]
+  );
+  return /** @type {Todo}*/ (rows[0]);
 }
 
 /**
@@ -68,45 +55,86 @@ async function findById(id) {
  * @returns {Promise<Todo["id"]>}
  */
 async function create(description) {
-  const poolPromise = pool;
-  const [result] = /** @type {import('mysql2').OkPacket[]} */ (
-    await poolPromise.query("INSERT INTO todos SET ?", [description])
+  const [result] = /** @type {mysql.OkPacket[]} */ (
+    await query("INSERT INTO todos SET ?", [description])
   );
 
   return result.insertId;
 }
 
+//TODO: insert ignore
+
 /**
  *
- * @param {Partial<Todo> & {id: Todo["id"]}} description
- * @returns {Promise<Todo["id"]>}
+ * @param {Partial<Todo>} todo
+ * @param {Todo["id"]} id
  */
-async function update(description) {
-  const poolPromise = pool;
-
-  const [result] = /** @type {import('mysql2').OkPacket[]} */ (
-    await poolPromise.query("UPDATE todos SET ? WHERE id = ?", [
-      utilObj.objectWithoutProperties(description, ["id"]),
-      description.id,
+async function update(todo, id) {
+  const [result] = /** @type {[mysql.ResultSetHeader, any]} */ (
+    await query("UPDATE todos SET ? WHERE id = ?", [
+      utilObj.objectWithoutProperties(todo, ["id"]),
+      id,
     ])
   );
 
-  return result.insertId;
+  if (result.affectedRows === 0) throw new Error("NoRowsAffected");
+}
+
+/**
+ *
+ * @param {Partial<Todo> & {id: Todo["id"]}} todo
+ * @param {Todo["id"]} id
+ * @returns {Promise<Todo>}
+ */
+async function updateAndSelect(todo, id) {
+  const [result] =
+    /** @type {[[mysql.ResultSetHeader, mysql.RowDataPacket[]], any]} */ (
+      await query(
+        `UPDATE todos SET ? WHERE id = ?;
+        SELECT * FROM todos WHERE id = ?;
+        `,
+        [utilObj.objectWithoutProperties(todo, ["id"]), id, id]
+      )
+    );
+
+  if (result[0].affectedRows === 0) throw new Error("NoRowsAffected");
+  return /** @type {Todo}*/ (result[1][0]);
 }
 
 /**
  *
  * @param {Todo["id"]} id
- * @returns {Promise<boolean>}
  */
 async function destroy(id) {
-  const poolPromise = pool;
-
-  const [result] = /** @type {import('mysql2').OkPacket[]} */ (
-    await poolPromise.query("DELETE FROM todos WHERE id = ?", [id])
+  const [result] = /** @type {[mysql.ResultSetHeader, any]} */ (
+    await query("DELETE FROM todos WHERE id = ?", [id])
   );
 
-  return result.affectedRows > 0;
+  console.log(result);
+  if (result.affectedRows === 0) throw new Error("NoRowsAffected");
 }
 
-module.exports = { findAll, findById, create, update, destroy, todoSchema };
+/**
+ *
+ * @param {number} id
+ */
+async function markAsDelete(id) {
+  const [result] = /** @type {[mysql.ResultSetHeader, any]} */ (
+    await query("UPDATE todos SET delete_date=? WHERE id = ?", [new Date(), id])
+  );
+
+  if (result.affectedRows === 0) throw new Error("NoRowsAffected");
+}
+
+module.exports = {
+  create,
+
+  findAll,
+  findById,
+
+  update,
+  updateAndSelect,
+
+  destroy,
+  markAsDelete,
+};
