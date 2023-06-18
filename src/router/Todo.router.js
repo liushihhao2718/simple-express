@@ -2,10 +2,12 @@
 const express = require("express");
 const router = express.Router();
 const TodoController = require("../controller/todo.controller");
+const TodoValidator = require("../validator/todo.validator");
 const {
   validateReq,
   checkPagination,
   validateSchema,
+  handleNoRowsAffected,
 } = require("../middleware");
 
 // router.get("/", TodoController.getTodos);
@@ -19,24 +21,35 @@ router.get(
 
 router.get(
   "/:id",
-  validateSchema([TodoController.TodoReadItemReq_schema]),
+  validateSchema([TodoValidator.TodoId_schema]),
   validateReq,
   TodoController.getTodoById,
   handleNoRowsAffected
 );
-router.post("/", TodoController.createTodo);
-router.put("/:id", TodoController.updateTodoById, handleNoRowsAffected);
-router.delete("/:id", TodoController.deleteTodoById, handleNoRowsAffected);
+router.post(
+  "/",
+  validateSchema([TodoValidator.TodoCreateItemReq_schema]),
+  validateReq,
+  TodoController.createTodo
+);
 
-router.get("/:a/:b", (req, res)=>{});
+router.patch(
+  "/:id",
+  validateSchema([
+    TodoValidator.TodoId_schema,
+    TodoValidator.TodoUpdateItemReq_schema,
+  ]),
+  validateReq,
+  TodoController.updateTodoById,
+  handleNoRowsAffected
+);
 
-function handleNoRowsAffected(err, req, res, next) {
-  console.log("handleNoRowsAffected", err);
-  if (err.message === "NoRowsAffected") {
-    err.code = "NoRowsAffected";
-    err.status = 404;
-    err.message = "Todo not found";
-  }
-  next(err);
-}
+router.delete(
+  "/:id",
+  validateSchema([TodoValidator.TodoId_schema]),
+  validateReq,
+  TodoController.deleteTodoById,
+  handleNoRowsAffected
+);
+
 module.exports = router;

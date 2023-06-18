@@ -17,7 +17,6 @@ const HttpError = require("http-errors");
  *  query : import("../../@types/global").PaginationReq,
  * }} TodoReadPageReq
  *
- *
  * @typedef {ExpressRequest & {
  *  body: CreateTodo,
  * }} TodoCreateReq
@@ -31,8 +30,6 @@ const HttpError = require("http-errors");
  * params : { id:number },
  * }} TodoDeleteReq
  */
-
-
 
 /**
  *
@@ -68,19 +65,6 @@ async function getTodoById(req, res) {
   if (!todo) throw new HttpError.NotFound("Todo not found");
   res.json(todo);
 }
-
-/**
- * @type {import('../middleware').SchemaValidator}
- */
-const TodoReadItemReq_schema = {
-  schema: {
-    id: {
-      isInt: true,
-      toInt: true,
-    }
-  },
-  location: "params"
-};
 
 /**
  *
@@ -124,6 +108,4 @@ module.exports = {
   createTodo,
   updateTodoById,
   deleteTodoById,
-
-  TodoReadItemReq_schema
 };

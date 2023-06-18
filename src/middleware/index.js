@@ -1,3 +1,4 @@
+//@ts-check
 const { checkPagination } = require("./pagination");
 const { validationResult, checkSchema } = require("express-validator");
 
@@ -9,7 +10,6 @@ const { validationResult, checkSchema } = require("express-validator");
  */
 
 /**
- * @param {any} err
  * @param {ExpressRequest} req
  * @param {ExpressResponse} res
  * @param {NextFunction} next
@@ -73,25 +73,30 @@ function validateSchema(schemaValidators, allowExtraFields = false) {
  * @returns
  */
 function checkIfExtraFields(schemaValidators, req) {
-  const allowedFields = schemaValidators
-    .map((s) => Object.keys(s.schema))
-    .flat()
-    .sort();
-  // Check for all common request inputs
-  const requestInput = { ...req.query, ...req.params, ...req.body };
-  const requestFields = Object.keys(requestInput).sort();
+  for (const validator of schemaValidators) {
+    const keys = Object.keys(req[validator.location]);
 
-  console.log("allowedFields", allowedFields, "requestFields", requestFields);
-
-  if (JSON.stringify(allowedFields) === JSON.stringify(requestFields)) {
-    return false;
+    if (keys.find((key) => Object.keys(validator.schema).indexOf(key) == -1))
+      return true;
   }
+
   console.error(`${req.ip} try to make a invalid request`);
-  return true;
+  return false;
+}
+
+function handleNoRowsAffected(err, req, res, next) {
+  console.log("handleNoRowsAffected", err);
+  if (err.message === "NoRowsAffected") {
+    err.code = "NoRowsAffected";
+    err.status = 404;
+    err.message = "Resource not found";
+  }
+  next(err);
 }
 
 module.exports = {
   checkPagination,
   validateReq,
   validateSchema,
+  handleNoRowsAffected,
 };
