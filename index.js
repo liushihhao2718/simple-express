@@ -2,6 +2,7 @@
 require("dotenv").config();
 require("./src/config/timezone.js");
 require("./src/db");
+var cors = require('cors');
 const express = require("express");
 const bodyParser = require("body-parser");
 
@@ -10,6 +11,7 @@ require("express-async-errors");
 const app = express();
 const port = 3000;
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use((req, res, next) => {
   console.log('req', req.params, req.query, req.body);
