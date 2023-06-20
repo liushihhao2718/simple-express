@@ -1,4 +1,4 @@
-
+//@ts-check
 
 
 /**
@@ -8,7 +8,6 @@ module.exports.checkPagination = {
   schema: {
     limit: {
       optional: true,
-      default: 10,
       isInt: {
         options: {
           min: 0,
@@ -19,7 +18,6 @@ module.exports.checkPagination = {
     },
     offset: {
       optional: true,
-      default: 0,
       isInt: {
         options: {
           min: 0,

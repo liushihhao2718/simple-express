@@ -72,7 +72,11 @@ async function create(description) {
 async function update(todo, id) {
   const [result] = /** @type {[mysql.ResultSetHeader, any]} */ (
     await query("UPDATE todos SET ? WHERE id = ?", [
-      utilObj.objectWithoutProperties(todo, ["id"]),
+      utilObj.objectWithoutProperties(todo, [
+        "id",
+        "created_date",
+        "delete_date",
+      ]),
       id,
     ])
   );

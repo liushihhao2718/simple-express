@@ -86,7 +86,9 @@ async function updateTodoById(req, res) {
     if (req.body.id !== Number(req.params.id))
       throw new HttpError.BadRequest("Id in body does not match id in params");
   }
-  const todo = await Todo.updateAndSelect(req.body, Number(req.params.id));
+  await Todo.update(req.body, Number(req.params.id));
+  const todo = await Todo.findById(Number(req.params.id));
+
   res.status(200).json(todo);
 }
 
