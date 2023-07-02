@@ -28,7 +28,7 @@ router.get(
 );
 router.post(
   "/",
-  validateSchema([TodoValidator.TodoCreateItemReq_schema]),
+  validateSchema([TodoValidator.TodoCreateReq_schema]),
   validateReq,
   TodoController.createTodo
 );
@@ -37,7 +37,7 @@ router.patch(
   "/:id",
   validateSchema([
     TodoValidator.TodoId_schema,
-    TodoValidator.TodoUpdateItemReq_schema,
+    TodoValidator.TodoUpdateReq_schema,
   ]),
   validateReq,
   TodoController.updateTodoById,

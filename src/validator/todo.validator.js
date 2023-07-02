@@ -13,7 +13,7 @@ const TodoId_schema = {
 /**
  * @type {import('../middleware').SchemaValidator}
  */
-const TodoCreateItemReq_schema = {
+const TodoCreateReq_schema = {
   schema: {
     description: {
       isString: true,
@@ -29,7 +29,7 @@ const TodoCreateItemReq_schema = {
 /**
  * @type {import('../middleware').SchemaValidator}
  */
-const TodoUpdateItemReq_schema = {
+const TodoUpdateReq_schema = {
   schema: {
     description: {
       isString: true,
@@ -45,6 +45,6 @@ const TodoUpdateItemReq_schema = {
 
 module.exports = {
   TodoId_schema,
-  TodoCreateItemReq_schema,
-  TodoUpdateItemReq_schema,
+  TodoCreateReq_schema,
+  TodoUpdateReq_schema,
 };

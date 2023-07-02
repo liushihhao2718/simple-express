@@ -29,8 +29,11 @@ async function findAll(limit = Number.MAX_SAFE_INTEGER, offset = 0) {
   const [rows] = await query(
     `
     SELECT * FROM todos 
-    WHERE delete_date IS NULL
-    LIMIT ? OFFSET ?;`,
+    INNER JOIN (
+      SELECT id FROM todos 
+      WHERE delete_date IS NULL
+      ORDER BY id LIMIT ? OFFSET ?
+    ) AS tmp USING (id)`,
     [limit, offset]
   );
   return /** @type {Todo[]}*/ (rows);
