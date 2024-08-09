@@ -19,7 +19,14 @@ function validateReq(req, res, next) {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    res.status(400).json(errors.array()).end();
+    res
+      .status(400)
+      .json({
+        error: "ValidationError",
+        message: "Invalid request",
+        errors: errors.array(),
+      })
+      .end();
   } else {
     next();
   }
@@ -44,7 +51,11 @@ function validateSchema(schemaValidators, allowExtraFields = false) {
     ) {
       res
         .status(400)
-        .json([{ type: "field", msg: "not allowed extra fields" }])
+        .json({
+          error: "ValidationError",
+          message: "Invalid request",
+          errors: [{ type: "field", msg: "not allowed extra fields" }],
+        })
         .end();
 
       return;
@@ -56,7 +67,11 @@ function validateSchema(schemaValidators, allowExtraFields = false) {
       if (!results.every((r) => r.isEmpty())) {
         res
           .status(400)
-          .json(results.map((r) => r.array()).flat())
+          .json({
+            error: "ValidationError",
+            message: "Invalid request",
+            errors: results.map((r) => r.array()).flat(),
+          })
           .end();
         return;
       }
